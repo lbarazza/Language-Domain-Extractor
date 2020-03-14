@@ -4,15 +4,17 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def freq(url, n=None):
-    resp = requests.get(url)
+def freq(urls, n=None):
 
     raw = ""
-    if resp is not None:
-        html = BeautifulSoup(resp.text, "html.parser")
-        ps = html.select("p")
-        for p in ps:
-            raw += p.text.lower()
+    for url in urls:
+        resp = requests.get(url)
+
+        if resp is not None:
+            html = BeautifulSoup(resp.text, "html.parser")
+            ps = html.select("p")
+            for p in ps:
+                raw += p.text.lower()
 
     text = re.sub('[^A-Za-z0-9]+', ' ', raw)
     terms = text.split()
@@ -26,7 +28,7 @@ def freq(url, n=None):
 
     return [(i+1, sorted_terms[i], terms_dict[sorted_terms[i]], terms_dict[sorted_terms[i]]/N) for i in range(len(sorted_terms))]
 
-def compare_freq(x, base, k=1, n=None):
+def compare_freq(x, base, n=None, k=1):
     x_ = {}
     for i in x:
         x_[i[1]] = i[3]
@@ -46,27 +48,28 @@ def compare_freq(x, base, k=1, n=None):
     return z
 
 
-url1 = 'https://en.wikipedia.org/wiki/Physics'
+url1 = 'https://en.wikipedia.org/wiki/Mother'
 #url1 = "https://it.wikipedia.org/wiki/Impressionismo"
 
-terms_info1 = freq(url1)
+terms_info1 = freq([url1])
 
-#for term_info in terms_info1:
-#    print('{:4d}. {:15}: {:5d}      freq.: {:5.3f}'.format(term_info[0], term_info[1], term_info[2], term_info[3]))
+url_base1 = "https://en.wikipedia.org/wiki/English_language"
+url_base2 = 'https://en.wikipedia.org/wiki/Italy'
+#url_base2 = "https://it.wikipedia.org/wiki/Italia"
 
-#print("-----------------------------------------------------------")
+#base1 = freq(url_base1)
+#base2 = freq(url_base2)
+#base = set(base1 + base2)
 
-url2 = "https://en.wikipedia.org/wiki/English_language"#'https://en.wikipedia.org/wiki/Italy'
-#url2 = "https://it.wikipedia.org/wiki/Italia"
+base_epochs = 20
+url_base = "https://en.wikipedia.org/wiki/Special:Random"
+base = []
 
-terms_info2 = freq(url2)
+base = freq([url_base] * base_epochs)
 
-#for term_info in terms_info2:
-#    print('{:4d}. {:15}: {:5d}      freq.: {:5.3f}'.format(term_info[0], term_info[1], term_info[2], term_info[3]))
+terms_info3 = compare_freq(terms_info1, base, n=50, k=100)
 
-terms_info3 = compare_freq(terms_info1, terms_info2, k=1000, n=100)
-
-print("+-----------------------+")
+print("+----------------------------+")
 for term_info in terms_info3:
-    print('| {:4d}. {:15} |'.format(term_info[0], term_info[1]))
-print("+-----------------------+")
+    print('| {:4d}. {:20} |'.format(term_info[0], term_info[1]))
+print("+----------------------------+")
