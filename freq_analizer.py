@@ -2,6 +2,7 @@ import re
 from collections import Counter
 import requests
 from bs4 import BeautifulSoup
+from pattern3.text.en import singularize
 
 
 def freq(urls, n=None):
@@ -16,8 +17,10 @@ def freq(urls, n=None):
             for p in ps:
                 raw += p.text.lower()
 
-    text = re.sub('[^A-Za-z0-9]+', ' ', raw)
+    text = re.sub('[^A-Za-z0-9ا-ي]+', ' ', raw)
     terms = text.split()
+    for i in range(len(terms)):
+        terms[i] = singularize(terms[i])
     terms_dict = Counter(terms)
 
     sorted_terms = [i for i in reversed(sorted(terms_dict, key=terms_dict.get))]
@@ -48,7 +51,7 @@ def compare_freq(x, base, n=None, k=1):
     return z
 
 
-url1 = 'https://en.wikipedia.org/wiki/Mother'
+url1 = "https://ar.wikipedia.org/wiki/%D8%B9%D9%84%D9%85_%D8%A7%D9%84%D9%86%D8%A8%D8%A7%D8%AA"#'https://en.wikipedia.org/wiki/Mathematics'
 #url1 = "https://it.wikipedia.org/wiki/Impressionismo"
 
 terms_info1 = freq([url1])
@@ -61,8 +64,8 @@ url_base2 = 'https://en.wikipedia.org/wiki/Italy'
 #base2 = freq(url_base2)
 #base = set(base1 + base2)
 
-base_epochs = 20
-url_base = "https://en.wikipedia.org/wiki/Special:Random"
+base_epochs = 50
+url_base = "https://ar.wikipedia.org/wiki/Special:Random"
 base = []
 
 base = freq([url_base] * base_epochs)
